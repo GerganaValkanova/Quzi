@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приключение с Знайко - Викторина</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        #container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #znayko {
+            position: relative;
+            top: -10px;
+            left: -10px;
+        }
+        #score {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .question {
+            margin-top: 20px;
+        }
+        .answer {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .answer.correct {
+            background-color: #c8e6c9;
+        }
+        .answer.wrong {
+            background-color: #ffcdd2;
+        }
+        .next-btn {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .end-btn {
+            background-color: #4CAF50;
+        }
+        #end-message {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #emoji {
+            font-size: 40px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <img src="znayko.png" id="znayko" alt="Знайко - Изследовател" width="100">
+    <div id="score">Текущи точки: 0</div>
+    
+    <div id="quiz"></div>
+    
+    <button id="nextBtn" class="next-btn">Следващ въпрос</button>
+</div>
+
+<script>
+    // Викторина данни
+    const quizData = [
+        {
+            question: "1. Кое от следните е твърдо тяло?",
+            answers: ["Сол", "Вода", "Въздух"],
+            correct: 0
+        },
+        {
+            question: "2. Кое от изброените е течност?",
+            answers: ["Лед", "Мляко", "Камък"],
+            correct: 1
+        },
+        {
+            question: "3. Коя е правилната форма на водата?",
+            answers: ["Пара", "Масло", "Земя"],
+            correct: 0
+        },
+        {
+            question: "4. Кое вещество е газ?",
+            answers: ["Въглероден диоксид", "Масло", "Пясък"],
+            correct: 0
+        },
+        {
+            question: "5. Какво е ледът?",
+            answers: ["Твърдо", "Течно", "Газообразно"],
+            correct: 0
+        },
+        {
+            question: "6. Кое вещество е вода в твърдо състояние?",
+            answers: ["Лед", "Вода", "Мляко"],
+            correct: 0
+        },
+        {
+            question: "7. Какво става с водата при нагряване?",
+            answers: ["Изпарява се", "Замръзва", "Остава течност"],
+            correct: 0
+        },
+        {
+            question: "8. Кое вещество може да се изпарява?",
+            answers: ["Вода", "Метал", "Пясък"],
+            correct: 0
+        },
+        {
+            question: "9. Какво става с леда при нагряване?",
+            answers: ["Топи се", "Замръзва още повече", "Изпарява се"],
+            correct: 0
+        },
+        {
+            question: "10. Кое вещество е в течно състояние при стайна температура?",
+            answers: ["Мляко", "Сняг", "Желязо"],
+            correct: 0
+        }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    const quiz = document.getElementById('quiz');
+    const scoreDisplay = document.getElementById('score');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function loadQuestion() {
+        // Зареждане на въпроса и отговорите
+        const questionData = quizData[currentQuestion];
+        quiz.innerHTML = `<div class="question">${questionData.question}</div>`;
+        
+        questionData.answers.forEach((answer, index) => {
+            quiz.innerHTML += `<div class="answer" data-index="${index}">${answer}</div>`;
+        });
+        
+        document.querySelectorAll('.answer').forEach(answerEl => {
+            answerEl.addEventListener('click', checkAnswer);
+        });
+    }
+
+    function checkAnswer(event) {
+        const selectedAnswer = event.target;
+        const selectedAnswerIndex = parseInt(selectedAnswer.getAttribute('data-index'));
+        const correctAnswerIndex = quizData[currentQuestion].correct;
+
+        // Премахване на възможност за избор след първия клик
+        document.querySelectorAll('.answer').forEach(answerEl => {
+            answerEl.removeEventListener('click', checkAnswer);
+        });
+
+        if (selectedAnswerIndex === correctAnswerIndex) {
+            selectedAnswer.classList.add('correct');
+            score++;
+            scoreDisplay.textContent = `Текущи точки: ${score}`;
+        } else {
+            selectedAnswer.classList.add('wrong');
+        }
+
+        nextBtn.style.display = 'block';
+        if (currentQuestion === quizData.length - 1) {
+            nextBtn.textContent = 'Край';
+            nextBtn.classList.add('end-btn');
+        }
+    }
+
+    nextBtn.addEventListener('click', () => {
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+            loadQuestion();
+        } else {
+            endQuiz();
+        }
+        nextBtn.style.display = 'none';
+    });
+
+    function endQuiz() {
+        quiz.innerHTML = '';
+        let resultMessage;
+        if (score >= 9) {
+            resultMessage = 'Справихте се отлично!';
+        } else if (score >= 7) {
+            resultMessage = 'Справихте се много добре!';
+        } else if (score >= 5) {
+            resultMessage = 'Справихте се добре!';
+        } else {
+            resultMessage = 'Прочети още по темата и играй отново!';
+        }
+
+        quiz.innerHTML = `<div id="end-message">Вие събрахте общо ${score} точки<br>${resultMessage}</div>`;
+        const emoji = score >= 5 ? '😊' : '😢';
+        quiz.innerHTML += `<div id="emoji">${emoji}</div>`;
+    }
+
+    // Стартиране на играта
+    loadQuestion();
+</script>
+
+</body>
+</html>
